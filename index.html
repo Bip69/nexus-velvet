@@ -1,793 +1,279 @@
 <!DOCTYPE html>
-<html lang="fr" dir="ltr" id="htmlRoot">
+<html lang="fr" dir="ltr">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>NEXUS VELVET - Elite Secure Community</title>
+    <title>NEXUS VELVET - Secure Private Community</title>
     <style>
         :root {
-            --bg-color: #080811;
-            --neon-blue: #00f0ff;
-            --neon-pink: #ff0055;
-            --neon-glow: rgba(0, 240, 255, 0.4);
-            --pink-glow: rgba(255, 0, 85, 0.4);
-            --text-main: #ffffff;
-            --text-muted: #9494a0;
-            --card-bg: rgba(16, 16, 28, 0.95);
+            --bg-color: #080808;
+            --panel-bg: #121212;
+            --accent-neon: #ff2a6d;
+            --accent-glow: rgba(255, 42, 109, 0.4);
+            --text-main: #f0f0f0;
+            --text-muted: #888888;
+            --border-color: #222222;
         }
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
-        body { background-color: var(--bg-color); color: var(--text-main); min-height: 100vh; display: flex; flex-direction: column; align-items: center; padding: 15px; }
+        body { background-color: var(--bg-color); color: var(--text-main); min-height: 100vh; display: flex; flex-direction: column; }
         
-        .container { width: 100%; max-width: 500px; position: relative; }
+        /* Navigation & Header */
+        header { background: var(--panel-bg); border-bottom: 1px solid var(--border-color); padding: 15px 20px; display: flex; justify-content: space-between; align-items: center; position: sticky; top: 0; z-index: 1000; }
+        .logo { font-size: 1.2rem; font-weight: bold; color: var(--accent-neon); text-shadow: 0 0 10px var(--accent-glow); letter-spacing: 2px; }
+        .nav-controls { display: flex; gap: 10px; align-items: center; }
+        select, button { background: #1a1a1a; color: var(--text-main); border: 1px solid var(--border-color); padding: 8px 12px; border-radius: 6px; cursor: pointer; font-size: 0.9rem; }
+        button.btn-primary { background: var(--accent-neon); color: #fff; border: none; font-weight: bold; box-shadow: 0 0 10px var(--accent-glow); }
+        button:hover { opacity: 0.9; }
+
+        /* Container & Auth Screens */
+        .container { max-width: 1200px; margin: 0 auto; padding: 20px; width: 100%; flex: 1; display: flex; flex-direction: column; }
+        .card { background: var(--panel-bg); border: 1px solid var(--border-color); border-radius: 12px; padding: 30px; max-width: 450px; margin: 40px auto; width: 100%; box-shadow: 0 8px 24px rgba(0,0,0,0.5); }
+        .card h2 { margin-bottom: 20px; color: var(--accent-neon); text-align: center; font-size: 1.5rem; }
+        .form-group { margin-bottom: 15px; }
+        .form-group label { display: block; margin-bottom: 5px; color: var(--text-muted); font-size: 0.85rem; }
+        .form-group input, .form-group select, .form-group textarea { width: 100%; background: #0a0a0a; border: 1px solid var(--border-color); padding: 10px; color: var(--text-main); border-radius: 6px; }
+        .form-group input:focus, .form-group select:focus { border-color: var(--accent-neon); outline: none; }
+        .error-msg { color: #ff4444; font-size: 0.8rem; margin-top: 5px; display: none; }
+        .switch-auth { text-align: center; margin-top: 15px; font-size: 0.85rem; color: var(--text-muted); }
+        .switch-auth span { color: var(--accent-neon); cursor: pointer; text-decoration: underline; }
+
+        /* Dashboard Application Layout */
+        .app-layout { display: none; grid-template-columns: 250px 1fr; gap: 20px; height: calc(100vh - 80px); }
+        @media(max-width: 768px) { .app-layout { grid-template-columns: 1fr; height: auto; } }
+        .sidebar { background: var(--panel-bg); border: 1px solid var(--border-color); border-radius: 12px; padding: 15px; display: flex; flex-direction: column; gap: 10px; }
+        .sidebar button { text-align: left; background: transparent; border: none; padding: 12px; color: var(--text-main); border-radius: 8px; transition: 0.2s; }
+        .sidebar button:hover, .sidebar button.active { background: rgba(255, 42, 109, 0.1); color: var(--accent-neon); border-left: 3px solid var(--accent-neon); }
         
-        .header { text-align: center; margin-bottom: 20px; }
-        .header h1 { font-size: 1.8rem; color: var(--neon-blue); text-shadow: 0 0 12px var(--neon-glow); margin-bottom: 3px; }
-        .header p { color: var(--text-muted); font-size: 0.8rem; line-height: 1.5; }
-
-        .card { background: var(--card-bg); border: 1px solid rgba(0, 240, 255, 0.3); border-radius: 16px; padding: 20px; box-shadow: 0 0 20px rgba(0,0,0,0.8); backdrop-filter: blur(10px); margin-bottom: 15px; text-align: left; }
+        .main-content { background: var(--panel-bg); border: 1px solid var(--border-color); border-radius: 12px; padding: 20px; overflow-y: auto; }
+        .tab-pane { display: none; }
+        .tab-pane.active { display: block; }
         
-        .form-group { margin-bottom: 14px; }
-        .form-group label { display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px; font-size: 0.8rem; color: var(--text-muted); }
-        .form-group input, .form-group select, .form-group textarea { width: 100%; padding: 10px; background: rgba(0,0,0,0.6); border: 1px solid #333; border-radius: 10px; color: #fff; outline: none; font-size: 0.85rem; }
-        .form-group input:focus, .form-group select:focus, .form-group textarea:focus { border-color: var(--neon-blue); box-shadow: 0 0 6px var(--neon-glow); }
-        .form-group input[type="file"] { display: none; }
-
-        .file-upload-btn { display: block; width: 100%; padding: 10px; background: rgba(0,240,255,0.1); border: 1px dashed var(--neon-blue); color: var(--neon-blue); text-align: center; border-radius: 10px; cursor: pointer; font-size: 0.8rem; font-weight: bold; transition: 0.3s; }
-        .file-upload-btn:hover { background: rgba(0,240,255,0.2); }
-
-        .checkbox-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 5px; }
-        .checkbox-label { display: flex; align-items: center; gap: 6px; font-size: 0.75rem; color: #ddd; cursor: pointer; background: rgba(0,0,0,0.4); padding: 8px; border: 1px solid #333; border-radius: 8px; }
-        .checkbox-label input { width: auto; accent-color: var(--neon-blue); }
-
-        .btn { width: 100%; padding: 11px; background: var(--neon-blue); color: #000; border: none; font-weight: bold; border-radius: 10px; cursor: pointer; transition: 0.3s; text-transform: uppercase; font-size: 0.85rem; text-align: center; margin-top: 8px; box-shadow: 0 0 8px var(--neon-glow); }
-        .btn-pink { background: var(--neon-pink); color: #fff; box-shadow: 0 0 8px var(--pink-glow); }
-        .btn-twitter { background: #1da1f2; color: #fff; margin-bottom: 10px; display: flex; align-items: center; justify-content: center; gap: 8px; }
-        .btn-auto-geo { background: rgba(0, 240, 255, 0.15); color: var(--neon-blue); border: 1px solid var(--neon-blue); margin-bottom: 8px; font-size: 0.75rem; padding: 8px; }
-
-        .switch-mode { text-align: center; margin-top: 12px; font-size: 0.75rem; color: var(--text-muted); cursor: pointer; }
-        .switch-mode span { color: var(--neon-blue); text-decoration: underline; }
-
-        #appDashboard { display: none; width: 100%; max-width: 600px; }
+        /* Store & Feed styling */
+        .grid-store { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 15px; margin-top: 15px; }
+        .store-item { background: #0a0a0a; border: 1px solid var(--border-color); border-radius: 8px; padding: 15px; text-align: center; }
+        .store-item h4 { margin: 10px 0 5px; color: var(--accent-neon); }
+        .price { font-weight: bold; color: #fff; margin-bottom: 10px; }
         
-        .nav-tabs { display: flex; background: rgba(255,255,255,0.03); border: 1px solid rgba(0,240,255,0.2); border-radius: 12px; padding: 5px; margin-bottom: 15px; gap: 4px; overflow-x: auto; }
-        .tab-btn { flex: 1; background: none; border: none; color: var(--text-muted); padding: 8px 4px; font-size: 0.55rem; border-radius: 8px; cursor: pointer; white-space: nowrap; text-align: center; transition: 0.3s; }
-        .tab-btn.active { background: var(--neon-blue); color: #000; font-weight: bold; }
-
-        .tab-content { display: none; }
-        .tab-content.active { display: block; }
-
-        .profile-header-box { position: relative; border-radius: 14px; overflow: hidden; background: #12121c; border: 1px solid rgba(0,240,255,0.3); margin-bottom: 15px; }
-        .profile-cover { width: 100%; height: 130px; object-fit: cover; background: linear-gradient(45deg, #1f1f3a, #3a1f3a); }
-        .profile-avatar-container { position: absolute; bottom: 15px; left: 15px; display: flex; align-items: flex-end; gap: 12px; }
-        .profile-avatar { width: 80px; height: 80px; border-radius: 50%; border: 3px solid var(--neon-blue); object-fit: cover; background: #000; box-shadow: 0 0 10px rgba(0,0,0,0.8); }
-        .profile-info-text h3 { font-size: 1rem; color: #fff; text-shadow: 0 2px 4px rgba(0,0,0,0.8); }
-        .profile-info-text p { font-size: 0.7rem; color: var(--neon-blue); text-shadow: 0 1px 2px rgba(0,0,0,0.8); }
-
-        .media-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-top: 10px; }
-        .media-slot { aspect-ratio: 1; background: rgba(0,0,0,0.5); border: 1px dashed rgba(255,255,255,0.2); border-radius: 8px; display: flex; align-items: center; justify-content: center; position: relative; overflow: hidden; cursor: pointer; }
-        .media-slot img, .media-slot video { width: 100%; height: 100%; object-fit: cover; }
-        .media-slot span { font-size: 1.2rem; color: var(--text-muted); }
-
-        .grid-users { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 10px; }
-        .user-card { background: var(--card-bg); border: 1px solid rgba(0,240,255,0.2); border-radius: 12px; padding: 12px; text-align: center; position: relative; }
-        .user-card img { width: 60px; height: 60px; border-radius: 50%; object-fit: cover; border: 2px solid var(--neon-blue); margin-bottom: 8px; }
-        .user-card h5 { font-size: 0.85rem; color: #fff; }
-        .user-card p { font-size: 0.65rem; color: var(--text-muted); margin-bottom: 8px; }
-        .action-sm-btn { padding: 4px 6px; font-size: 0.6rem; border-radius: 6px; border: none; cursor: pointer; font-weight: bold; }
-        .btn-add { background: rgba(0,240,255,0.15); color: var(--neon-blue); border: 1px solid var(--neon-blue); }
-
-        /* ستايل شبكة سلع المتجر */
-        .store-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 12px; margin-bottom: 15px; }
-        .store-item-card { background: rgba(0,0,0,0.5); border: 1px solid rgba(255,0,85,0.3); border-radius: 12px; overflow: hidden; display: flex; flex-direction: column; text-align: left; }
-        .store-item-card img { width: 100%; height: 110px; object-fit: cover; }
-        .store-item-content { padding: 10px; display: flex; flex-direction: column; flex: 1; justify-content: space-between; }
-        .store-item-content h5 { font-size: 0.8rem; color: #fff; margin-bottom: 4px; }
-        .store-item-content p { font-size: 0.65rem; color: var(--text-muted); margin-bottom: 8px; line-height: 1.3; }
-        .store-item-price { font-size: 0.8rem; color: var(--neon-pink); font-weight: bold; margin-bottom: 8px; }
-
-        .post-box { background: var(--card-bg); border: 1px solid rgba(255,255,255,0.08); border-radius: 12px; padding: 15px; margin-bottom: 12px; text-align: left; }
-        .post-header { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
-        .post-header img { width: 35px; height: 35px; border-radius: 50%; object-fit: cover; }
-        .post-header h6 { font-size: 0.8rem; color: #fff; }
-        .post-header span { font-size: 0.6rem; color: var(--text-muted); }
-        .post-body { font-size: 0.8rem; color: #ddd; margin-bottom: 10px; line-height: 1.4; }
-        .comment-input { width: 100%; padding: 8px 12px; background: rgba(0,0,0,0.5); border: 1px solid #333; border-radius: 8px; color: #fff; font-size: 0.75rem; outline: none; }
-
-        .chat-container { display: flex; flex-direction: column; height: 380px; background: var(--card-bg); border: 1px solid rgba(0,240,255,0.3); border-radius: 14px; overflow: hidden; }
-        .chat-messages { flex: 1; padding: 12px; overflow-y: auto; display: flex; flex-direction: column; gap: 8px; text-align: left; }
-        .message-bubble { max-width: 80%; padding: 8px 12px; border-radius: 10px; font-size: 0.75rem; line-height: 1.4; position: relative; }
-        .message-bubble.incoming { background: rgba(255,255,255,0.08); color: #fff; align-self: flex-start; border-bottom-left-radius: 2px; }
-        .message-bubble.outgoing { background: var(--neon-blue); color: #000; align-self: flex-end; border-bottom-right-radius: 2px; font-weight: 500; }
-        .chat-input-area { display: flex; padding: 10px; background: rgba(0,0,0,0.4); border-top: 1px solid rgba(255,255,255,0.08); gap: 8px; }
-        .chat-input-area input { flex: 1; padding: 8px 12px; background: rgba(0,0,0,0.6); border: 1px solid #444; border-radius: 8px; color: #fff; font-size: 0.75rem; outline: none; }
-        .chat-send-btn { padding: 0 15px; background: var(--neon-blue); border: none; border-radius: 8px; font-weight: bold; cursor: pointer; color: #000; font-size: 0.75rem; }
-
-        .badge-vip { background: linear-gradient(45deg, #ffd700, #ff8c00); color: #000; padding: 2px 6px; border-radius: 4px; font-size: 0.6rem; font-weight: bold; }
+        .hidden { display: none !important; }
     </style>
 </head>
 <body>
 
-    <div id="authScreen" class="container">
-        <div class="header">
-            <h1 id="appTitle">⚡ NEXUS VELVET</h1>
-            <p id="t-subtitle">Communauté privée, libertine & sécurisée</p>
+    <header>
+        <div class="logo">NEXUS VELVET</div>
+        <div class="nav-controls">
+            <select id="langSelector" onchange="changeLanguage(this.value)">
+                <option value="fr">Français</option>
+                <option value="ar">العربية</option>
+                <option value="en">English</option>
+            </select>
+            <button id="logoutBtn" class="hidden" onclick="logoutUser()">Déconnexion</button>
         </div>
+    </header>
 
-        <div class="card">
-            <div class="form-group">
-                <label id="lbl-lang-select">Langue / اللغة</label>
-                <select id="uiLangSelect" onchange="changeSystemLanguage(this.value)">
-                    <option value="fr">Français</option>
-                    <option value="ar">العربية</option>
-                    <option value="en">English</option>
-                </select>
-            </div>
-
-            <button class="btn btn-twitter" onclick="simulateTwitterLogin()">
-                <svg width="16" height="16" fill="currentColor" viewBox="0 0 24 24"><path d="M23.953 4.57a10 10 0 01-2.825.775 4.958 4.958 0 002.163-2.723c-.951.555-2.005.959-3.127 1.184a4.92 4.92 0 00-8.384 4.482C7.69 8.095 4.067 6.13 1.64 3.162a4.822 4.822 0 00-.666 2.475c0 1.71.87 3.213 2.188 4.096a4.904 4.904 0 01-2.228-.616v.06a4.923 4.923 0 003.946 4.827 4.996 4.996 0 01-2.212.085 4.936 4.936 0 004.604 3.417 9.867 9.867 0 01-6.102 2.105c-.39 0-.779-.023-1.17-.067a13.995 13.995 0 007.557 2.209c9.053 0 13.998-7.496 13.998-13.985 0-.21 0-.42-.015-.63A9.936 9.936 0 0024 4.59z"/></svg>
-                <span id="t-twitter-btn">Connexion rapide Twitter</span>
-            </button>
-
-            <div style="text-align: center; font-size: 0.75rem; color: var(--text-muted); margin: 10px 0;" id="t-or-text">Ou inscription par identifiants</div>
-
-            <h3 id="formTitle" style="color: var(--neon-blue); margin-bottom: 15px; text-align: center; font-size: 1.1rem;">Créer un nouveau compte</h3>
-            
-            <div class="form-group">
-                <label id="t-label-name">Nom d'utilisateur ou Couple (Ex: Alex & Lina)</label>
-                <input type="text" id="authName" placeholder="Alex & Lina">
-            </div>
-            <div class="form-group">
-                <label id="t-label-email">E-mail chiffré</label>
-                <input type="email" id="authEmail" placeholder="user@secure.net">
-            </div>
-            <div class="form-group">
-                <label id="t-label-pass">Mot de passe</label>
-                <input type="password" id="authPassword" placeholder="••••••••">
-            </div>
-
-            <div class="form-group">
-                <label id="t-label-idverify">Vérification d'identité & Paiement (Badge VIP 🛡️)</label>
-                <label for="authIdFile" class="file-upload-btn" id="authIdFileLabel">🛡️ Charger justificatif & Reçu (CCP/BaridMob)</label>
-                <input type="file" id="authIdFile" accept="image/*" onchange="handleIdFileSelect(this)">
-            </div>
-
-            <button class="btn" id="btnAuthSubmit" onclick="handleAuth()">S'inscrire et commencer</button>
-            
-            <div class="switch-mode" onclick="toggleAuthMode()">
-                <span id="switchText">Déjà un compte ? Se connecter</span>
-            </div>
-        </div>
-    </div>
-
-    <div id="appDashboard">
-        <div class="header">
-            <h1 style="font-size: 1.3rem;">⚡ NEXUS VELVET HUB</h1>
-            <p id="userWelcome" style="color: var(--neon-blue); font-size: 0.8rem;"></p>
-        </div>
-
-        <div class="nav-tabs">
-            <button class="tab-btn active" id="tab-btn-feed" onclick="switchTab('feedTab', this)">💬 الحائط</button>
-            <button class="tab-btn" id="tab-btn-chat" onclick="switchTab('chatTab', this)">📨 الشات</button>
-            <button class="tab-btn" id="tab-btn-escort" onclick="switchTab('escortTab', this)">✨ إيسكورت</button>
-            <button class="tab-btn" id="tab-btn-meet" onclick="switchTab('meetTab', this)">📍 أماكن</button>
-            <button class="tab-btn" id="tab-btn-members" onclick="switchTab('membersTab', this)">👥 الأعضاء</button>
-            <button class="tab-btn" id="tab-btn-subs" onclick="switchTab('subsTab', this)">🛡️ الاشتراكات</button>
-            <button class="tab-btn" id="tab-btn-store" onclick="switchTab('storeTab', this)">🛍️ المتجر</button>
-            <button class="tab-btn" id="tab-btn-profile" onclick="switchTab('profileTab', this)">⚙️ البروفايل</button>
-        </div>
-
-        <div id="feedTab" class="tab-content active">
-            <div class="card" style="padding: 12px; margin-bottom: 10px;">
-                <textarea id="newPostText" class="comment-input" rows="2" placeholder="Partagez vos moments libertins..."></textarea>
-                <button class="btn" id="t-post-btn" style="padding: 6px; font-size: 0.75rem; margin-top: 6px;" onclick="addPost()">Publier sur le mur</button>
-            </div>
-            <div id="postsContainer">
-                <div class="post-box">
-                    <div class="post-header">
-                        <img src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100" alt="Avatar">
-                        <div>
-                            <h6>Alex & Lina (Couple Libre) <span class="badge-vip">VIP 🛡️</span></h6>
-                            <span>Il y a 2h • Salon Élite</span>
-                        </div>
-                    </div>
-                    <div class="post-body">Excellente soirée hier dans le salon privé, des membres ouverts d'esprit sur Alger ?</div>
-                </div>
-            </div>
-        </div>
-
-        <div id="chatTab" class="tab-content">
-            <div class="chat-container">
-                <div style="background: rgba(0,0,0,0.6); padding: 10px; border-bottom: 1px solid rgba(0,240,255,0.2); display: flex; align-items: center; gap: 10px;">
-                    <img src="https://images.unsplash.com/photo-1517841905240-472988babdf9?w=100" style="width: 30px; height: 30px; border-radius: 50%; object-fit: cover;" alt="Chat User">
-                    <div>
-                        <h6 style="font-size: 0.8rem; color: #fff;">Samir & Nora (Salon Privé)</h6>
-                        <span style="font-size: 0.6rem; color: var(--neon-blue);">En ligne • Chiffré</span>
-                    </div>
-                </div>
-                <div class="chat-messages" id="chatMessagesBox">
-                    <div class="message-bubble incoming">Bonsoir, est-ce que vous organisez une rencontre ce week-end ?</div>
-                    <div class="message-bubble outgoing">Bonsoir ! Oui, salon privé vérifié ce vendredi.</div>
-                </div>
-                <div class="chat-input-area">
-                    <input type="text" id="chatInputText" placeholder="Écrivez votre message..." onkeypress="handleChatKeyPress(event)">
-                    <button class="chat-send-btn" onclick="sendChatMessage()">Envoyer</button>
-                </div>
-            </div>
-        </div>
-
-        <div id="escortTab" class="tab-content">
-            <div class="card" style="border-color: var(--neon-pink);">
-                <h4 style="color: var(--neon-pink); font-size: 0.95rem; margin-bottom: 8px;">✨ Services VIP & Escort Discrets</h4>
-                <div class="grid-users">
-                    <div class="user-card" style="border-color: var(--neon-pink);">
-                        <img src="https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=100" alt="Escort">
-                        <h5>Selma VIP (25)</h5>
-                        <p>Alger • <span class="badge-vip">Vérifiée</span></p>
-                        <button class="action-sm-btn" style="background: var(--neon-pink); color: #fff; width: 100%;" onclick="alert('Réservation VIP envoyée')">Réserver</button>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <div id="meetTab" class="tab-content">
-            <div class="card">
-                <h4 style="color: var(--neon-blue); font-size: 0.95rem; margin-bottom: 8px;">📍 Lieux de Rencontre Partenaires</h4>
+    <div class="container">
+        <!-- AUTH SECTION -->
+        <div id="authContainer">
+            <!-- LOGIN CARD -->
+            <div id="loginCard" class="card">
+                <h2 id="loginTitle">Connexion</h2>
                 <div class="form-group">
-                    <label>Sélectionner un lieu partenaire / الفندق أو الصالون الشريك</label>
-                    <select id="meetLocationSelect">
-                        <option value="none">-- Aucun / اختيار حر --</option>
-                        <option value="hotel_hydra">🏨 Hôtel & Spa Velvet (Hydra, Alger)</option>
-                        <option value="lounge_oran">🍸 Private Lounge (Oran Centre)</option>
-                        <option value="villa_annaba">🏡 Villa Privée VIP (Annaba)</option>
+                    <label id="lblLoginEmail">Email</label>
+                    <input type="email" id="loginEmail" required>
+                </div>
+                <div class="form-group">
+                    <label id="lblLoginPass">Mot de passe</label>
+                    <input type="password" id="loginPass" required>
+                </div>
+                <div id="loginError" class="error-msg">Identifiants incorrects ou compte introuvable.</div>
+                <button class="btn-primary" style="width: 100%; margin-top: 10px;" onclick="handleLogin()" id="btnLoginText">Se connecter</button>
+                <div class="switch-auth">
+                    <span id="switchToRegText" onclick="toggleAuthMode('register')">Pas de compte ? S'inscrire</span>
+                </div>
+            </div>
+
+            <!-- REGISTER CARD -->
+            <div id="registerCard" class="card hidden">
+                <h2 id="regTitle">Inscription Sécurisée</h2>
+                <div class="form-group">
+                    <label id="lblRegPseudo">Pseudonyme</label>
+                    <input type="text" id="regPseudo" required>
+                </div>
+                <div class="form-group">
+                    <label id="lblRegEmail">Email</label>
+                    <input type="email" id="regEmail" required>
+                </div>
+                <div class="form-group">
+                    <label id="lblRegPass">Mot de passe</label>
+                    <input type="password" id="regPass" required>
+                </div>
+                <div class="form-group">
+                    <label id="lblRegRole">Profil / Rôle</label>
+                    <select id="regRole">
+                        <option value="couple">Couple</option>
+                        <option value="single_m">Homme Seul</option>
+                        <option value="single_f">Femme Seule</option>
                     </select>
                 </div>
-                <div class="form-group">
-                    <label>Disponibilité pour les rencontres / التفرغ للمواعيد</label>
-                    <select id="meetAvailability">
-                        <option value="weekends">Week-ends uniquement (عطلة نهاية الأسبوع فقط)</option>
-                        <option value="evenings">En soirées (في الأمسيات)</option>
-                        <option value="anytime">Flexible / À tout moment (مرن / في أي وقت)</option>
-                    </select>
-                </div>
-                <button class="btn" onclick="saveMeetingPreference()">Enregistrer les lieux de rencontre</button>
-            </div>
-        </div>
-
-        <div id="membersTab" class="tab-content">
-            <div class="grid-users">
-                <div class="user-card">
-                    <img src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100" alt="User">
-                    <h5>Karim (32) <span class="badge-vip">VIP</span></h5>
-                    <p>180cm | 75kg | Solo</p>
-                    <button class="action-sm-btn btn-add" onclick="alert('Demande envoyée')">➕ Demande</button>
+                <div id="regError" class="error-msg">Veuillez remplir tous les champs correctement.</div>
+                <button class="btn-primary" style="width: 100%; margin-top: 10px;" onclick="handleRegister()" id="btnRegText">Créer mon compte</button>
+                <div class="switch-auth">
+                    <span id="switchToLoginText" onclick="toggleAuthMode('login')">Déjà un compte ? Se connecter</span>
                 </div>
             </div>
         </div>
 
-        <!-- تبويب الاشتراكات والباقات وحدها -->
-        <div id="subsTab" class="tab-content">
-            <div class="card" style="border-color: #ffd700;">
-                <h4 style="color: #ffd700; font-size: 0.95rem; margin-bottom: 10px;">🛡️ إدارة الاشتراكات والباقات العضوية (Memberships)</h4>
-                <p style="font-size: 0.75rem; color: var(--text-muted); margin-bottom: 12px;">ترقية حسابك للحصول على شارة الموثوقية وصالونات الدردشة الخاصة:</p>
-                
-                <div class="form-group">
-                    <label>اختر باقة الاشتراك / Type d'Abonnement</label>
-                    <select id="subPlanSelect">
-                        <option value="vip_badge">شارة VIP والشارة الموثقة (1,500 دج / شهر)</option>
-                        <option value="vip_gold">باقة الأوسكار الذهبية - وصول غير محدود (4,000 دج / 3 أشهر)</option>
-                        <option value="elite_vip">باقة النخبة المطلقة - Elite VIP (10,000 دج / سنة)</option>
-                    </select>
-                </div>
-
-                <div class="form-group">
-                    <label>إثبات دفع الاشتراك (بريدي موب / CCP Receipt)</label>
-                    <label for="subReceiptFile" class="file-upload-btn">📄 تحميل وصل الدفع (CCP / BaridMob)</label>
-                    <input type="file" id="subReceiptFile" accept="image/*" onchange="alert('تم تحميل وصل الاشتراك بنجاح، في انتظار المراجعة ✅')">
-                </div>
-
-                <button class="btn btn-pink" onclick="processSubscription()">تأكيد وطلب تفعيل الاشتراك 🛡️</button>
+        <!-- MAIN APP INTERFACE -->
+        <div id="appContainer" class="app-layout">
+            <div class="sidebar">
+                <button class="active" onclick="switchTab('wall', this)" id="navWall">Mur Public</button>
+                <button onclick="switchTab('radar', this)" id="navRadar">Radar Localisation</button>
+                <button onclick="switchTab('store', this)" id="navStore">Boutique VIP</button>
+                <button onclick="switchTab('profile', this)" id="navProfile">Mon Profil</button>
             </div>
-        </div>
-
-        <!-- تبويب المتجر لوحده (السلع الحقيقية بالصور والأسعار) -->
-        <div id="storeTab" class="tab-content">
-            <div class="card" style="border-color: var(--neon-pink);">
-                <h4 style="color: var(--neon-pink); font-size: 0.95rem; margin-bottom: 8px;">🛍️ المتجر الإلكتروني الخاص (Velvet Store)</h4>
-                <p style="font-size: 0.75rem; color: var(--text-muted); margin-bottom: 12px;">تصفح السلع واطلبها مباشرة بتوصيل سسرّي تماماً لباب منزلكم:</p>
-                
-                <div class="store-grid">
-                    <!-- السلعة 1 -->
-                    <div class="store-item-card">
-                        <img src="https://images.unsplash.com/photo-1583394838336-acd977736f90?w=300" alt="Lingerie">
-                        <div class="store-item-content">
-                            <div>
-                                <h5>Lingerie de Luxe</h5>
-                                <p>طقم لانجري فاخر وعالي الجودة.</p>
-                            </div>
-                            <div>
-                                <div class="store-item-price">3,500 دج</div>
-                                <button class="action-sm-btn btn-pink" style="width: 100%; padding: 6px;" onclick="openCheckout('Lingerie de Luxe', '3,500 دج')">اطلب الآن 🛒</button>
-                            </div>
+            <div class="main-content">
+                <!-- Wall Tab -->
+                <div id="tab-wall" class="tab-pane active">
+                    <h3 id="wallHeader">Fil d'actualité de la communauté</h3>
+                    <p style="color: var(--text-muted); margin-top: 10px;" id="wallDesc">Espace sécurisé et chiffré pour les partages de la communauté.</p>
+                </div>
+                <!-- Radar Tab -->
+                <div id="tab-radar" class="tab-pane">
+                    <h3 id="radarHeader">Radar Géolocalisé à Proximité</h3>
+                    <p style="color: var(--text-muted); margin-top: 10px;" id="radarDesc">Recherche de profils compatibles selon vos critères d'hébergement.</p>
+                </div>
+                <!-- Store Tab -->
+                <div id="tab-store" class="tab-pane">
+                    <h3 id="storeHeader">Boutique Exclusive Nexus</h3>
+                    <div class="grid-store">
+                        <div class="store-item">
+                            <h4>Parfum Pheromone</h4>
+                            <p class="price">45 €</p>
+                            <button class="btn-primary" style="padding: 5px 10px; font-size: 0.8rem;" onclick="alert('Commande enregistrée !')">Acheter</button>
                         </div>
-                    </div>
-
-                    <!-- السلعة 2 -->
-                    <div class="store-item-card">
-                        <img src="https://images.unsplash.com/photo-1526947425960-945c6e72858f?w=300" alt="Toys">
-                        <div class="store-item-content">
-                            <div>
-                                <h5>Accessoires VIP</h5>
-                                <p>إكسسوارات وأدوات سرية خاصة.</p>
-                            </div>
-                            <div>
-                                <div class="store-item-price">6,000 دج</div>
-                                <button class="action-sm-btn btn-pink" style="width: 100%; padding: 6px;" onclick="openCheckout('Accessoires VIP', '6,000 دج')">اطلب الآن 🛒</button>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- السلعة 3 -->
-                    <div class="store-item-card">
-                        <img src="https://images.unsplash.com/photo-1513519245088-0e12902e5a38?w=300" alt="Gift Box">
-                        <div class="store-item-content">
-                            <div>
-                                <h5>Coffret Elite</h5>
-                                <p>علبة هدايا النخبة المتكاملة.</p>
-                            </div>
-                            <div>
-                                <div class="store-item-price">8,500 دج</div>
-                                <button class="action-sm-btn btn-pink" style="width: 100%; padding: 6px;" onclick="openCheckout('Coffret Elite', '8,500 دج')">اطلب الآن 🛒</button>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- السلعة 4 -->
-                    <div class="store-item-card">
-                        <img src="https://images.unsplash.com/photo-1541643600914-78b084683601?w=300" alt="Parfum">
-                        <div class="store-item-content">
-                            <div>
-                                <h5>Parfum Phéromones</h5>
-                                <p>عطر خاص بفرومونات الجاذبية.</p>
-                            </div>
-                            <div>
-                                <div class="store-item-price">4,500 دج</div>
-                                <button class="action-sm-btn btn-pink" style="width: 100%; padding: 6px;" onclick="openCheckout('Parfum Phéromones', '4,500 دج')">اطلب الآن 🛒</button>
-                            </div>
+                        <div class="store-item">
+                            <h4>Masque Dentelle VIP</h4>
+                            <p class="price">25 €</p>
+                            <button class="btn-primary" style="padding: 5px 10px; font-size: 0.8rem;" onclick="alert('Commande enregistrée !')">Acheter</button>
                         </div>
                     </div>
                 </div>
-
-                <!-- نموذج إتمام الطلب للسلعة المحددة -->
-                <div style="background: rgba(0,0,0,0.6); padding: 12px; border-radius: 10px; border: 1px dashed rgba(255,0,85,0.4);" id="checkoutBox">
-                    <h6 id="selectedProductTitle" style="color: var(--neon-pink); font-size: 0.85rem; margin-bottom: 8px;">📦 اختر سلعة من الأعلى لإتمام الطلب</h6>
-                    <div class="form-group" style="margin-bottom: 8px;">
-                        <input type="text" id="storeDeliveryAddress" placeholder="عنوان التوصيل السري (الولاية، الحي أو نقطة الاستلام)...">
-                    </div>
-                    <button class="btn btn-pink" onclick="processStoreOrder()">تأكيد وإرسال طلب الشراء 🚀</button>
+                <!-- Profile Tab -->
+                <div id="tab-profile" class="tab-pane">
+                    <h3 id="profileHeader">Gestion du Profil</h3>
+                    <div style="margin-top: 15px;" id="profileDetails"></div>
                 </div>
-            </div>
-        </div>
-
-        <!-- واجهة البروفايل الشخصي وتحتوي على مكان الإقامة والتحديد التلقائي/اليدوي -->
-        <div id="profileTab" class="tab-content">
-            <div class="profile-header-box">
-                <img id="previewCover" class="profile-cover" src="https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=600" alt="Cover">
-                <div class="profile-avatar-container">
-                    <img id="previewAvatar" class="profile-avatar" src="https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150" alt="Avatar">
-                    <div class="profile-info-text">
-                        <h3 id="displayProfileName">Alex & Lina</h3>
-                        <p id="displayProfileCat">Couple Libre</p>
-                    </div>
-                </div>
-            </div>
-
-            <div class="card">
-                <h4 style="color: var(--neon-blue); font-size: 0.95rem; margin-bottom: 12px;">👤 Informations Générales & Bio</h4>
-                <div class="form-group">
-                    <label>Âge / السن</label>
-                    <input type="number" id="userAge" placeholder="28">
-                </div>
-                <div class="form-group">
-                    <label>Bio (نبذة تعريفية شخصية)</label>
-                    <textarea id="userBio" rows="3" placeholder="Écrivez quelques mots sur vos envies et votre profil..."></textarea>
-                </div>
-                <div class="form-group">
-                    <label>Catégorie / نوع الحساب</label>
-                    <select id="userCategory" onchange="adjustMorphologyFields()">
-                        <option value="Couple Libre">Couple Libre / كوبل متحرر</option>
-                        <option value="Solo Femme">Solo Femme / امرأة وحدها</option>
-                        <option value="Lesbienne">Lesbienne / سحاقيات (ليزبيان)</option>
-                        <option value="Trans / Travestis">Trans / Travestis / ترافستي</option>
-                        <option value="Solo Homme">Solo Homme / رجل وحده</option>
-                    </select>
-                </div>
-            </div>
-
-            <!-- قسم مكان الإقامة والتحديد التلقائي داخل البروفايل -->
-            <div class="card" style="border-color: var(--neon-blue);">
-                <h4 style="color: var(--neon-blue); font-size: 0.95rem; margin-bottom: 8px;">📍 مكان الإقامة والاستقبال (Hébergement & Lieu)</h4>
-                <p style="font-size: 0.75rem; color: var(--text-muted); margin-bottom: 12px;">حدد قدرتك على استقبال المواعيد ومكانك الجغرافي:</p>
-
-                <div class="form-group">
-                    <label>Avez-vous un lieu privé / توفر المكان أو الإقامة؟</label>
-                    <select id="hasPrivatePlace">
-                        <option value="Oui">نعم، تتوفر على مكان خاص (Oui)</option>
-                        <option value="Non">لا، أبحث عن مكان (Non)</option>
-                        <option value="Hebergement">توفير إقامة (Hébergement)</option>
-                    </select>
-                </div>
-
-                <div class="form-group">
-                    <label>Localisation automatique (GPS) / تحديد الإقامة أوتوماتيكياً</label>
-                    <button class="btn btn-auto-geo" onclick="detectUserLocation()">📍 الكشف التلقائي عن الموقع (GPS)</button>
-                    <input type="text" id="autoLocationResult" placeholder="الإحداثيات أو المدينة المستخرجة تلقائياً..." readonly>
-                </div>
-
-                <div class="form-group">
-                    <label>Ou proposer un lieu personnalisé / أو اقترح مكاناً خاصاً بك يدوياً</label>
-                    <input type="text" id="customMeetLocation" placeholder="Ex: Appartement privé sécurisé à Alger...">
-                </div>
-            </div>
-
-            <div class="card">
-                <h4 style="color: var(--neon-blue); font-size: 0.95rem; margin-bottom: 10px;">🔍 Ce qu'il cherche (ماذا تبحث في المنصة؟)</h4>
-                <div class="checkbox-grid">
-                    <label class="checkbox-label"><input type="checkbox" value="Hommes"> Hommes (رجال)</label>
-                    <label class="checkbox-label"><input type="checkbox" value="Femmes"> Femmes (نساء)</label>
-                    <label class="checkbox-label"><input type="checkbox" value="Solo Femme"> Solo Femme (امرأة وحدها)</label>
-                    <label class="checkbox-label"><input type="checkbox" value="Couples Libres"> Couples Libres (كوبل متحرر)</label>
-                    <label class="checkbox-label"><input type="checkbox" value="Lesbiennes"> Lesbiennes (سحاقيات / ليزبيان)</label>
-                    <label class="checkbox-label"><input type="checkbox" value="Trans / Travestis"> Trans / Travestis (ترافستي)</label>
-                    <label class="checkbox-label"><input type="checkbox" value="Couple Trans / Travestis"> Couple Trans / Trav. (كوبل ترافستي)</label>
-                    <label class="checkbox-label"><input type="checkbox" value="Discretions"> Rencontres Discrètes (لقاءات سرية)</label>
-                </div>
-            </div>
-
-            <div class="card" id="morphologyCard">
-                <h4 style="color: var(--neon-blue); font-size: 0.95rem; margin-bottom: 12px;">⚙️ Morphologie, Peau & Cheveux</h4>
-                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
-                    <div class="form-group"><label>Taille (cm)</label><input type="number" id="userHeight" placeholder="175"></div>
-                    <div class="form-group"><label>Poids (kg)</label><input type="number" id="userWeight" placeholder="70"></div>
-                </div>
-
-                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
-                    <div class="form-group">
-                        <label>Teint (لون البشرة)</label>
-                        <select id="userSkinTone">
-                            <option value="Clair">Clair / فاتح</option>
-                            <option value="Mat / Tané">Mat / Tané / أسمر / حنطي</option>
-                            <option value="Noir">Noir / داكن</option>
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <label>Cheveux (لون وطبيعة الشعر)</label>
-                        <select id="userHair">
-                            <option value="Brun">Brun / بني</option>
-                            <option value="Noir">Noir / أسود</option>
-                            <option value="Blond">Blond / أشقر</option>
-                            <option value="Chauve">Chauve / أصلع</option>
-                        </select>
-                    </div>
-                </div>
-
-                <div id="maleMorphologyGroup" class="form-group">
-                    <label>Volume en Érection (طول القضيب)</label>
-                    <select id="maleAttrSize">
-                        <option value="12-14cm">12-14 cm (Standard)</option>
-                        <option value="15-17cm">15-17 cm (Moyen)</option>
-                        <option value="18-20cm+">18-20 cm+ (Grand VIP)</option>
-                    </select>
-                </div>
-
-                <div id="femaleMorphologyGroup" class="form-group" style="display:none;">
-                    <label>Poitrine & Bonnet (مقاس الصدر)</label>
-                    <select id="femaleAttrSize">
-                        <option value="90B">90B (Standard)</option>
-                        <option value="95C">95C (Moyen)</option>
-                        <option value="100D+">100D+ (Grand / Silicone)</option>
-                    </select>
-                </div>
-            </div>
-
-            <div class="card">
-                <h4 style="color: var(--neon-blue); font-size: 0.95rem; margin-bottom: 12px;">🛡️ Préférences & Sécurité</h4>
-                <div class="form-group">
-                    <label>Préservatif (استخدام الواقي الذكري)</label>
-                    <select id="prefCondom">
-                        <option value="Oui">Oui / نعم</option>
-                        <option value="Non">Non / لا</option>
-                        <option value="Parlons-en">Parlons-en / لنتناقش في الأمر</option>
-                    </select>
-                </div>
-                <div class="form-group">
-                    <label>PrEP (العلاقة الوقائية)</label>
-                    <select id="prefPrep">
-                        <option value="Non">Non / لا</option>
-                        <option value="Oui">Oui / نعم</option>
-                        <option value="Parlons-en">Parlons-en / لنتناقش</option>
-                    </select>
-                </div>
-                <div class="form-group">
-                    <label>Rencontres Discrètes / Libertines (الرغبة في لقاءات سرية ومتحررة)</label>
-                    <select id="prefLibertine">
-                        <option value="Oui">Oui / نعم بشدة</option>
-                        <option value="Optionnel">Optionnel / اختياري حسب الطرف الآخر</option>
-                        <option value="Non">Non / لا</option>
-                    </select>
-                </div>
-            </div>
-
-            <div class="card">
-                <h4 style="color: var(--neon-blue); font-size: 0.95rem; margin-bottom: 12px;">🖼️ Galerie & Identité</h4>
-                <div class="form-group">
-                    <label>Photo de Profil</label>
-                    <label for="inputAvatarFile" class="file-upload-btn">📷 Choisir l'avatar</label>
-                    <input type="file" id="inputAvatarFile" accept="image/*" onchange="previewImage(this, 'previewAvatar')">
-                </div>
-                <div class="form-group">
-                    <label>Galerie (6 cases)</label>
-                    <div class="media-grid">
-                        <div class="media-slot" onclick="document.getElementById('mediaSlot1').click()"><span>+</span><input type="file" id="mediaSlot1" style="display:none" accept="image/*" onchange="handleMediaSlot(this, 0)"></div>
-                        <div class="media-slot" onclick="document.getElementById('mediaSlot2').click()"><span>+</span><input type="file" id="mediaSlot2" style="display:none" accept="image/*" onchange="handleMediaSlot(this, 1)"></div>
-                        <div class="media-slot" onclick="document.getElementById('mediaSlot3').click()"><span>+</span><input type="file" id="mediaSlot3" style="display:none" accept="image/*" onchange="handleMediaSlot(this, 2)"></div>
-                        <div class="media-slot" onclick="document.getElementById('mediaSlot4').click()"><span>+</span><input type="file" id="mediaSlot4" style="display:none" accept="image/*" onchange="handleMediaSlot(this, 3)"></div>
-                        <div class="media-slot" onclick="document.getElementById('mediaSlot5').click()"><span>+</span><input type="file" id="mediaSlot5" style="display:none" accept="image/*" onchange="handleMediaSlot(this, 4)"></div>
-                        <div class="media-slot" onclick="document.getElementById('mediaSlot6').click()"><span>+</span><input type="file" id="mediaSlot6" style="display:none" accept="image/*" onchange="handleMediaSlot(this, 5)"></div>
-                    </div>
-                </div>
-                <button class="btn btn-pink" onclick="saveProfileChanges()">Enregistrer / حفظ التعديلات</button>
             </div>
         </div>
     </div>
 
     <script>
-        let isLoginMode = false;
-        let selectedProduct = "Aucun produit sélectionné";
-
+        // Translations Dictionary
         const translations = {
-            fr: {
-                title: "NEXUS VELVET",
-                subtitle: "Communauté privée, libertine & sécurisée",
-                twitterBtn: "Connexion rapide Twitter",
-                orText: "Ou inscription par identifiants",
-                formTitleReg: "Créer un nouveau compte",
-                formTitleLog: "Se connecter",
-                nameLabel: "Nom d'utilisateur ou Couple (Ex: Alex & Lina)",
-                emailLabel: "E-mail chiffré",
-                passLabel: "Mot de passe",
-                idVerifyLabel: "Vérification d'identité & Paiement (Badge VIP 🛡️)",
-                idFileLabel: "🛡️ Charger justificatif & Reçu de paiement (CCP/BaridMob)",
-                btnSubReg: "S'inscrire et commencer",
-                btnSubLog: "Se connecter",
-                switchReg: "Déjà un compte ? Se connecter",
-                switchLog: "Pas de compte ? S'inscrire",
-                postBtn: "Publier sur le mur",
-                feedTab: "💬 الحائط", chatTab: "📨 الشات", escortTab: "✨ إيسكورت", meetTab: "📍 أماكن", membersTab: "👥 الأعضاء", subsTab: "🛡️ الاشتراكات", storeTab: "🛍️ المتجر", profileTab: "⚙️ البروفايل"
-            },
-            ar: {
-                title: "NEXUS VELVET",
-                subtitle: "مجتمع خاص، متحرر وآمن",
-                twitterBtn: "تسجيل سريع عبر تويتر",
-                orText: "أو التسجيل بالبيانات الشخصية",
-                formTitleReg: "تسجيل حساب جديد",
-                formTitleLog: "تسجيل الدخول",
-                nameLabel: "اسم المستخدم أو الكوبل (مثال: أمين و سارة)",
-                emailLabel: "البريد الإلكتروني المشفر",
-                passLabel: "كلمة المرور",
-                idVerifyLabel: "إثبات الهوية ودفع الاشتراك (شارة الموثوقية VIP 🛡️)",
-                idFileLabel: "🛡️ تحميل ملف الهوية وصل الإرسال (بريدي موب / CCP)",
-                btnSubReg: "إتمام التسجيل والبدء",
-                btnSubLog: "تسجيل الدخول",
-                switchReg: "لديك حساب بالفعل؟ تسجيل الدخول",
-                switchLog: "ليس لديك حساب؟ تسجيل جديد",
-                postBtn: "نشر في الحائط العام",
-                feedTab: "💬 الحائط", chatTab: "📨 الشات", escortTab: "✨ إيسكورت", meetTab: "📍 أماكن", membersTab: "👥 الأعضاء", subsTab: "🛡️ الاشتراكات", storeTab: "🛍️ المتجر", profileTab: "⚙️ البروفايل"
-            },
-            en: {
-                title: "NEXUS VELVET",
-                subtitle: "Private, Libertine & Secure Community",
-                twitterBtn: "Quick Twitter Login",
-                orText: "Or register with credentials",
-                formTitleReg: "Create a New Account",
-                formTitleLog: "Sign In",
-                nameLabel: "Username or Couple Name",
-                emailLabel: "Encrypted E-mail",
-                passLabel: "Password",
-                idVerifyLabel: "Identity Verification & Payment (VIP Badge 🛡️)",
-                idFileLabel: "🛡️ Upload ID & Payment Receipt (CCP/BaridMob)",
-                btnSubReg: "Register & Start",
-                btnSubLog: "Sign In",
-                switchReg: "Already have an account? Sign In",
-                switchLog: "No account? Register",
-                postBtn: "Post on General Wall",
-                feedTab: "💬 Wall", chatTab: "📨 Chat", escortTab: "✨ Escort", meetTab: "📍 Places", membersTab: "👥 Members", subsTab: "🛡️ Subscriptions", storeTab: "🛍️ Store", profileTab: "⚙️ Profile"
-            }
+            fr: { loginTitle: "Connexion", regTitle: "Inscription Sécurisée", btnLoginText: "Se connecter", btnRegText: "Créer mon compte", switchToRegText: "Pas de compte ? S'inscrire", switchToLoginText: "Déjà un compte ? Se connecter", logoutBtn: "Déconnexion", navWall: "Mur Public", navRadar: "Radar Localisation", navStore: "Boutique VIP", navProfile: "Mon Profil" },
+            ar: { loginTitle: "تسجيل الدخول", regTitle: "تسجيل حساب آمن", btnLoginText: "دخول", btnRegText: "إنشاء حساب", switchToRegText: "ليس لديك حساب؟ سجل الآن", switchToLoginText: "لديك حساب بالفعل؟ سجل دخولك", logoutBtn: "خروج", navWall: "المجتمع العام", navRadar: "رادار القرب", navStore: "المتجر الحصري", navProfile: "ملفي الشخصي" },
+            en: { loginTitle: "Login", regTitle: "Secure Registration", btnLoginText: "Sign In", btnRegText: "Create Account", switchToRegText: "No account? Register", switchToLoginText: "Already have an account? Login", logoutBtn: "Logout", navWall: "Public Wall", navRadar: "GPS Radar", navStore: "VIP Store", navProfile: "My Profile" }
         };
 
-        function changeSystemLanguage(lang) {
+        function changeLanguage(lang) {
+            document.documentElement.lang = lang;
+            document.documentElement.dir = lang === 'ar' ? 'rtl' : 'ltr';
             const t = translations[lang];
-            const htmlRoot = document.getElementById('htmlRoot');
-            htmlRoot.setAttribute('dir', lang === 'ar' ? 'rtl' : 'ltr');
-            htmlRoot.setAttribute('lang', lang);
-
-            document.getElementById('appTitle').innerText = t.title;
-            document.getElementById('t-subtitle').innerText = t.subtitle;
-            document.getElementById('t-twitter-btn').innerText = t.twitterBtn;
-            document.getElementById('t-or-text').innerText = t.orText;
-            document.getElementById('formTitle').innerText = isLoginMode ? t.formTitleLog : t.formTitleReg;
-            document.getElementById('t-label-name').innerText = t.nameLabel;
-            document.getElementById('t-label-email').innerText = t.emailLabel;
-            document.getElementById('t-label-pass').innerText = t.passLabel;
-            document.getElementById('t-label-idverify').innerText = t.idVerifyLabel;
-            document.getElementById('authIdFileLabel').innerText = t.idFileLabel;
-            document.getElementById('btnAuthSubmit').innerText = isLoginMode ? t.btnSubLog : t.btnSubReg;
-            document.getElementById('switchText').innerText = isLoginMode ? t.switchLog : t.switchReg;
-            document.getElementById('t-post-btn').innerText = t.postBtn;
-
-            document.getElementById('tab-btn-feed').innerText = t.feedTab;
-            document.getElementById('tab-btn-chat').innerText = t.chatTab;
-            document.getElementById('tab-btn-escort').innerText = t.escortTab;
-            document.getElementById('tab-btn-meet').innerText = t.meetTab;
-            document.getElementById('tab-btn-members').innerText = t.membersTab;
-            document.getElementById('tab-btn-subs').innerText = t.subsTab;
-            document.getElementById('tab-btn-store').innerText = t.storeTab;
-            document.getElementById('tab-btn-profile').innerText = t.profileTab;
+            if(!t) return;
+            document.getElementById('loginTitle').innerText = t.loginTitle;
+            document.getElementById('regTitle').innerText = t.regTitle;
+            document.getElementById('btnLoginText').innerText = t.btnLoginText;
+            document.getElementById('btnRegText').innerText = t.btnRegText;
+            document.getElementById('switchToRegText').innerText = t.switchToRegText;
+            document.getElementById('switchToLoginText').innerText = t.switchToLoginText;
+            document.getElementById('logoutBtn').innerText = t.logoutBtn;
+            document.getElementById('navWall').innerText = t.navWall;
+            document.getElementById('navRadar').innerText = t.navRadar;
+            document.getElementById('navStore').innerText = t.navStore;
+            document.getElementById('navProfile').innerText = t.navProfile;
         }
 
-        function toggleAuthMode() {
-            isLoginMode = !isLoginMode;
-            const lang = document.getElementById('uiLangSelect').value;
-            const t = translations[lang];
-            document.getElementById('formTitle').innerText = isLoginMode ? t.formTitleLog : t.formTitleReg;
-            document.getElementById('btnAuthSubmit').innerText = isLoginMode ? t.btnSubLog : t.btnSubReg;
-            document.getElementById('switchText').innerText = isLoginMode ? t.switchLog : t.switchReg;
-        }
-
-        function handleIdFileSelect(input) {
-            if(input.files && input.files[0]) {
-                document.getElementById('authIdFileLabel').innerText = "🛡️ Pièce d'identité et reçu validés ✅";
-            }
-        }
-
-        function handleAuth() {
-            const name = document.getElementById('authName').value || "Alex & Lina";
-            document.getElementById('userWelcome').innerText = `Bienvenue, ${name} (🛡️ VIP Vérifié)`;
-            document.getElementById('authScreen').style.display = 'none';
-            document.getElementById('appDashboard').style.display = 'block';
-            document.getElementById('displayProfileName').innerText = name;
-            adjustMorphologyFields();
-        }
-
-        function simulateTwitterLogin() {
-            document.getElementById('authName').value = "TwitterUser_VIP";
-            handleAuth();
-        }
-
-        function switchTab(tabId, btnElement) {
-            document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
-            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-            document.getElementById(tabId).classList.add('active');
-            btnElement.classList.add('active');
-        }
-
-        function adjustMorphologyFields() {
-            const cat = document.getElementById('userCategory').value;
-            document.getElementById('displayProfileCat').innerText = cat;
-
-            const maleGroup = document.getElementById('maleMorphologyGroup');
-            const femaleGroup = document.getElementById('femaleMorphologyGroup');
-
-            if (cat === 'Solo Femme' || cat === 'Lesbienne') {
-                maleGroup.style.display = 'none';
-                femaleGroup.style.display = 'block';
-            } else if (cat === 'Trans / Travestis') {
-                maleGroup.style.display = 'block';
-                femaleGroup.style.display = 'block';
+        function toggleAuthMode(mode) {
+            if(mode === 'register') {
+                document.getElementById('loginCard').classList.add('hidden');
+                document.getElementById('registerCard').classList.remove('hidden');
             } else {
-                maleGroup.style.display = 'block';
-                femaleGroup.style.display = 'none';
+                document.getElementById('registerCard').classList.add('hidden');
+                document.getElementById('loginCard').classList.remove('hidden');
             }
         }
 
-        function detectUserLocation() {
-            const resultInput = document.getElementById('autoLocationResult');
-            if (navigator.geolocation) {
-                resultInput.value = "جاري تحديد الموقع الجغرافي والإقامة أوتوماتيكياً...";
-                navigator.geolocation.getCurrentPosition(
-                    (position) => {
-                        const lat = position.coords.latitude.toFixed(4);
-                        const lon = position.coords.longitude.toFixed(4);
-                        resultInput.value = `📍 تم تحديد الإقامة أوتوماتيكياً: (Lat: ${lat}, Lon: ${lon})`;
-                    },
-                    (error) => {
-                        resultInput.value = "⚠️ تعذر الكشف التلقائي (يرجى إدخال المكان يدوياً)";
-                    }
-                );
-            } else {
-                resultInput.value = "⚠️ متصفحك لا يدعم الكشف التلقائي للموقع";
-            }
-        }
+        // Auth Logic with LocalStorage
+        function handleRegister() {
+            const pseudo = document.getElementById('regPseudo').value.trim();
+            const email = document.getElementById('regEmail').value.trim();
+            const pass = document.getElementById('regPass').value.trim();
+            const role = document.getElementById('regRole').value;
 
-        function saveMeetingPreference() {
-            alert(`Lieux de rencontre partenaires enregistrés !`);
-        }
-
-        function processSubscription() {
-            const sub = document.getElementById('subPlanSelect').value;
-            alert(`Demande d'abonnement (${sub}) soumise avec succès ! En attente de validation de reçu 🛡️`);
-        }
-
-        function openCheckout(productName, price) {
-            selectedProduct = `${productName} (${price})`;
-            document.getElementById('selectedProductTitle').innerText = `📦 المنتج المحدد: ${selectedProduct}`;
-            window.scrollTo({ top: document.getElementById('checkoutBox').offsetTop, behavior: 'smooth' });
-        }
-
-        function processStoreOrder() {
-            const address = document.getElementById('storeDeliveryAddress').value || "Adresse standard";
-            if(selectedProduct === "Aucun produit sélectionné") {
-                alert("⚠️ يرجى النقر على زر 'اطلب الآن' لأحد المنتجات أولاً!");
+            if(!pseudo || !email || !pass) {
+                document.getElementById('regError').style.display = 'block';
                 return;
             }
-            alert(`تم تسجيل طلب شراء المنتج: [${selectedProduct}]\n📍 عنوان التوصيل السري: ${address}\n📦 سيتم التواصل معكم لتأكيد التوصيل.`);
+
+            let users = JSON.parse(localStorage.getItem('nexus_users') || '[]');
+            if(users.some(u => u.email === email)) {
+                alert("Cet email est déjà utilisé.");
+                return;
+            }
+
+            const newUser = { pseudo, email, pass, role };
+            users.push(newUser);
+            localStorage.setItem('nexus_users', JSON.stringify(users));
+            localStorage.setItem('nexus_current_user', JSON.stringify(newUser));
+            
+            initAppSession(newUser);
         }
 
-        function previewImage(input, targetId) {
-            if (input.files && input.files[0]) {
-                const reader = new FileReader();
-                reader.onload = function(e) { document.getElementById(targetId).src = e.target.result; }
-                reader.readAsDataURL(input.files[0]);
+        function handleLogin() {
+            const email = document.getElementById('loginEmail').value.trim();
+            const pass = document.getElementById('loginPass').value.trim();
+
+            let users = JSON.parse(localStorage.getItem('nexus_users') || '[]');
+            const found = users.find(u => u.email === email && u.pass === pass);
+
+            if(found) {
+                localStorage.setItem('nexus_current_user', JSON.stringify(found));
+                initAppSession(found);
+            } else {
+                document.getElementById('loginError').style.display = 'block';
             }
         }
 
-        function handleMediaSlot(input, index) {
-            if (input.files && input.files[0]) {
-                const reader = new FileReader();
-                reader.onload = function(e) {
-                    input.parentElement.innerHTML = `<img src="${e.target.result}" style="width:100%; height:100%; object-fit:cover;">`;
-                }
-                reader.readAsDataURL(input.files[0]);
+        function initAppSession(user) {
+            document.getElementById('authContainer').style.display = 'none';
+            document.getElementById('appContainer').style.display = 'grid';
+            document.getElementById('logoutBtn').classList.remove('hidden');
+
+            document.getElementById('profileDetails').innerHTML = `
+                <p><strong>Pseudonyme :</strong> ${user.pseudo}</p>
+                <p><strong>Email :</strong> ${user.email}</p>
+                <p><strong>Type de profil :</strong> ${user.role}</p>
+            `;
+        }
+
+        function logoutUser() {
+            localStorage.removeItem('nexus_current_user');
+            location.reload();
+        }
+
+        function switchTab(tabId, btn) {
+            document.querySelectorAll('.tab-pane').forEach(p => p.classList.remove('active'));
+            document.querySelectorAll('.sidebar button').forEach(b => b.classList.remove('active'));
+            document.getElementById('tab-' + tabId).classList.add('active');
+            btn.classList.add('active');
+        }
+
+        // Check active session on load
+        window.onload = function() {
+            const activeUser = JSON.parse(localStorage.getItem('nexus_current_user'));
+            if(activeUser) {
+                initAppSession(activeUser);
             }
-        }
-
-        function saveProfileChanges() {
-            const age = document.getElementById('userAge').value;
-            const placeType = document.getElementById('hasPrivatePlace').value;
-            const autoGeo = document.getElementById('autoLocationResult').value;
-            const custom = document.getElementById('customMeetLocation').value;
-            alert(`Profil et lieu d'hébergement mis à jour avec succès !\n📍 (Lieu privé: ${placeType})\n🌐 (${autoGeo || custom || 'Lieux manuels'})`);
-        }
-
-        function addPost() {
-            const text = document.getElementById('newPostText').value;
-            if(!text.trim()) return;
-            const container = document.getElementById('postsContainer');
-            container.insertAdjacentHTML('afterbegin', `
-                <div class="post-box">
-                    <div class="post-header">
-                        <img src="${document.getElementById('previewAvatar').src}" alt="Avatar">
-                        <div>
-                            <h6>${document.getElementById('displayProfileName').innerText} <span class="badge-vip">VIP 🛡️</span></h6>
-                            <span>À l'instant</span>
-                        </div>
-                    </div>
-                    <div class="post-body">${text}</div>
-                </div>
-            `);
-            document.getElementById('newPostText').value = '';
-        }
-
-        function sendChatMessage() {
-            const input = document.getElementById('chatInputText');
-            if(!input.value.trim()) return;
-            const chatBox = document.getElementById('chatMessagesBox');
-            chatBox.innerHTML += `<div class="message-bubble outgoing">${input.value}</div>`;
-            input.value = '';
-            chatBox.scrollTop = chatBox.scrollHeight;
-        }
-
-        function handleChatKeyPress(e) {
-            if(e.key === 'Enter') sendChatMessage();
         }
     </script>
 </body>
